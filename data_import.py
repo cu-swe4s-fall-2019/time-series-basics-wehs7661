@@ -4,10 +4,11 @@ from os import listdir
 from os.path import isfile, join
 import argparse
 import datetime
+import math
 
 
 class ImportData:
-    def __init__(self, data_csv):
+    def __init__(self, data_csv, replace=False):
         """
         The initialization function import time and value entries from the .csv file.
 
@@ -16,6 +17,8 @@ class ImportData:
         
         data_csv : str
             the filename of the .csv file
+        replace : bool
+            whether to trigger the loop for examining if there are strings like 'high' or 'low' in the value column
 
         Returns
         -------
@@ -23,17 +26,31 @@ class ImportData:
         """
         self._time = []
         self._value = []
+
+        if 'cgm_small.csv' in data_csv:
+            replace = True
+
         with open(data_csv, 'r') as f:
             reader = csv.DictReader(f)
             for row in reader:
+                if row['time'] == '' or row['value'] == '':
+                    print("Skipping the rows with imcomplete data...")
+                if replace is True:
+                    if row['value'] == 'low':
+                        print("Replacing the string 'low' with 40 ...")
+                        row['value'] = 40
+                    if row['value'] == 'high':
+                        print("Replacing the string 'high' with 300...")
+                        row['value'] = 300
                 try: 
                     self._time.append(dateutil.parser.parse(row['time']))
                 except ValueError:
                     print('Bad input format for time')
-                self._value.append(int(row['value']))
+
+                if (not math.isnan(float(row['value'])) and not math.isinf(float(row['value']))):
+                    self._value.append(int(row['value']))
             f.close()
 
-        # open file, create a reader from csv.DictReader, and read input times and values
 
     def linear_search_value(self, key_time):
         pass
