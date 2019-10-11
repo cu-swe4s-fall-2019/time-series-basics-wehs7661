@@ -51,11 +51,28 @@ class ImportData:
                     self._value.append(int(row['value']))
             f.close()
 
-
     def linear_search_value(self, key_time):
-        pass
-        # return list of value(s) associated with key_time
-        # if none, return -1 and error message
+        """ This function returns a list of value(s) associated with key_time. If the list is empty, return -1 and error message.
+
+        Parameters
+        ----------
+        key_time : datetime
+            the time for finding the associated value
+
+        Returns
+        -------
+        a list of value(s) associated with given key_time
+        """
+        vals = []
+        for i in range(len(self._time)):
+            if self._time[i] == key_time:
+                vals.append(self._value[i])
+
+            if (len(vals) == 0):
+                print('No value associated with key_time found.')
+                return -1
+        return vals
+
 
     def binary_search_value(self,key_time):
         pass
