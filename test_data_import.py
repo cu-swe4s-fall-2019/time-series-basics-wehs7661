@@ -25,6 +25,19 @@ class TestDataImport(unittest.TestCase):
         self.assertEqual(40, obj._value[0])
         os.remove('test.csv')
 
+    def test_linear_search(self):
+        """
+        A testing function for linear_search_value
+        """
+        csv_file = './smallData/meal_small.csv'
+        obj = data_import.ImportData(csv_file)
+        time1 = datetime.datetime(2018, 3, 16, 0, 20, 0, 0)
+        time2 = datetime.datetime(2020, 3, 16, 0, 20, 0, 0)
+        val1 = obj.linear_search_value(time1)
+        val2 = obj.linear_search_value(time2)
+        self.assertEqual(val1, [0])
+        self.assertEqual(val2, -1)
+
 
 if __name__ == '__main__':
     unittest.main()
