@@ -6,6 +6,7 @@ import argparse
 import datetime
 import math
 import copy
+import sys
 
 
 class ImportData:
@@ -187,34 +188,56 @@ def printArray(data_list, annotation_list, base_name, key_file):
 
 if __name__ == '__main__':
 
-    #adding arguments
-    parser = argparse.ArgumentParser(description= 'A class to import, combine, and print data from a folder.',
+    parser = argparse.ArgumentParser(
+        description= 'A class to import, combine, and print data from a folder.',
     prog= 'dataImport')
 
-    parser.add_argument('folder_name', type = str, help = 'Name of the folder')
+    parser.add_argument('-f', 
+                        '--folder_name', 
+                        type = str, 
+                        help = 'Name of the folder')
 
-    parser.add_argument('output_file', type=str, help = 'Name of Output file')
+    parser.add_argument('-o', 
+                        '--output_file', 
+                        type=str, 
+                        help = 'Name of Output file')
 
-    parser.add_argument('sort_key', type = str, help = 'File to sort on')
+    parser.add_argument('-s',
+                        '--sort_key', 
+                        type = str, 
+                        help = 'File to sort on')
 
-    parser.add_argument('--number_of_files', type = int,
-    help = "Number of Files", required = False)
+    parser.add_argument('-n',
+                        '--number_of_files', 
+                        type = int,
+                        help = "Number of Files", 
+                        required = False)
 
     args = parser.parse_args()
 
+    try:
+        file_list = listdir(args.folder_name)   
+    except FileNotFoundError:
+        print('Folder not found.')
+        sys.exit(1)
+    
+    data_list = []
+    for i in range(len(file_list)):
+        data_list.append(ImportData(args.folder_name + '/' + file_list[i]))
+    if len(data_list) == 0:
+        print('No data imported')
+        sys.exit(1)
 
-    #pull all the folders in the file
-    #files_lst = # list the folders
+    data_5, data_15 = [], []
+    for obj in data_list:
+        data_5.append(roundTimeArray(obj, 5))
+        data_15.append(roundTimeArray(obj, 15))
+    
+    # print to a csv file
+    result = printArray(data_5, listdir(args.folder_name), args.output_file+'_5', args.sort_key)
+    if (result == -1):
+        sys.exit(1)
 
-
-    #import all the files into a list of ImportData objects (in a loop!)
-    data_lst = []
-
-    #create two new lists of zip objects
-    # do this in a loop, where you loop through the data_lst
-    data_5 = [] # a list with time rounded to 5min
-    data_15 = [] # a list with time rounded to 15min
-
-    #print to a csv file
-    printLargeArray(data_5,files_lst,args.output_file+'_5',args.sort_key)
-    printLargeArray(data_15, files_lst,args.output_file+'_15',args.sort_key)
+    result = printArray(data_15, listdir(args.folder_name), args.output_file+'_15', args.sort_key)
+    if (result == -1):
+        sys.exit(1)
