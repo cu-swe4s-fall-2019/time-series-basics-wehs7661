@@ -36,32 +36,33 @@ class ImportData:
         if 'cgm_small.csv' in data_csv:
             replace = True
 
+        row_num = 1
         with open(data_csv, 'r') as f:
             reader = csv.DictReader(f)
             for row in reader:
+                row_num += 1
                 if row['time'] == '' or row['value'] == '':
-                    print("Skipping the rows with imcomplete data...")
+                    print("Row %s: skipping the rows with imcomplete data..." % str(row_num))
                 if replace is True:
                     if row['value'] == 'low':
-                        print("Replacing the string 'low' with 40 ...")
+                        print("Row %s:, replacing the string 'low' with 40 ..." % str(row_num))
                         row['value'] = 40
                     if row['value'] == 'high':
-                        print("Replacing the string 'high' with 300 ...")
+                        print("Row %s: replacing the string 'high' with 300 ..." %str(row_num))
                         row['value'] = 300
 
                 try: 
                     dateutil.parser.parse(row['time'])
                 except ValueError:
-                    self._err = True
-                    print('Wrong data type / bad input format of time')
+                    print('Row %s: wrong data type / bad input format of time' %str(row_num))
 
                 try: 
                     if (not math.isnan(float(row['value'])) and not math.isinf(float(row['value'])) and self._err == False):
                         self._time.append(datetime.datetime.strptime(row['time'], '%m/%d/%y %H:%M'))
-                        self._value.append(int(row['value']))
+                        self._value.append(float(row['value']))
 
                 except ValueError:
-                    print('Wrong data type / bad input format of value')
+                    print('Row %s: wrong data type / bad input format of value' %str(row_num))
             f.close()
 
     def linear_search_value(self, key_time):
@@ -75,7 +76,8 @@ class ImportData:
 
         Returns
         -------
-        a list of value(s) associated with given key_time
+        vals : int or list
+            a list of value(s) associated with given key_time
         """
         vals = []
         for i in range(len(self._time)):
@@ -126,7 +128,9 @@ def roundTimeArray(obj, res):
         if i == 0:
             rtime_list.append(roundtime._time[0])
         else:
-            if roundtime._time[i] != roundtime._time[i - 1]:
+            if roundtime._time[i] == roundtime._time[i - 1]:
+                continue
+            else:
                 rtime_list.append(roundtime._time[i])
         search_vals = roundtime.linear_search_value(roundtime._time[i])
         if obj._type == 0:
@@ -136,12 +140,49 @@ def roundTimeArray(obj, res):
 
     return zip(rtime_list, value_list)
 
-    
-
-
 def printArray(data_list, annotation_list, base_name, key_file):
-    pass
-    # combine and print on the key_file
+    """
+    This function creates a csv file which aligns the data in the given list of zip objects based on key_file. 
+
+    Parameters
+    ----------
+    data_list : list
+        a list of zip objects of data (time, value) pairs
+    annotation_list : list
+        a list of strings with column labels for the data value (file list)
+    base_name : str
+        the file name of the file to be printed
+    key_file : str
+        the name from annotation_list which the user wants to align the data on
+    
+    Returns
+    -------
+    None (but a .csv file will be produced)
+    """
+    
+    if not (key_file in annotation_list):
+        print('The reference file is not found in annotation_list!')
+        return -1
+    else:
+        key_index = annotation_list.index(key_file)
+        key_data = data_list[key_index]
+        annotation_list.pop(key_index)   # the list of other file
+        data_list.pop(key_index)         # the data of other file
+
+    first_row = ['time', key_file] + annotation_list
+    with open(base_name + '.csv', mode='w') as outfile:
+        writer = csv.writer(outfile, delimiter=',')
+        writer.writerow(first_row)
+        for (ref_time, ref_val) in key_data:
+            other_vals = []
+            for data in data_list:
+                len_list = len(other_vals)
+                for (time, val) in data:
+                    if (ref_time == time):
+                        other_vals.append(val)
+                if len(other_vals) == len_list:
+                    other_vals.append(0)
+            writer.writerow([ref_time, ref_val] + other_vals)
 
 
 if __name__ == '__main__':
