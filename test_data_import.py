@@ -14,7 +14,7 @@ class TestDataImport(unittest.TestCase):
         A testing function for checking the data types and the length of the data
         """
         self.assertEqual(len(self.obj._time), len(self.obj._value))
-        self.assertEqual("<class 'int'>", str(type(self.obj._value[0])))
+        self.assertEqual("<class 'float'>", str(type(self.obj._value[0])))
         self.assertEqual("<class 'datetime.datetime'>", str(type(self.obj._time[0])))
 
     def test_init_replace(self):
@@ -56,7 +56,21 @@ class TestDataImport(unittest.TestCase):
             self.assertEqual(time.minute, 0)
             self.assertEqual(val, (3 + 7 + 76 + 6 + 7))
             break
-            
+
+    def test_printarray(self):
+        """
+        A testing function for printArray
+        """
+        file_list = os.listdir('./smallData')
+        data_list = []
+        for i in range(len(file_list)):
+            obj = data_import.ImportData('./smallData/' + file_list[i])
+            data_list.append(data_import.roundTimeArray(obj, 5))
+
+        result = data_import.printArray(data_list, file_list, 'test_printarray', 'meal_small.csv')
+        self.assertNotEqual(result, -1)
+        self.assertTrue(os.path.exists('test_printarray.csv'))
+        os.remove('test_printarray.csv')
 
 
 
