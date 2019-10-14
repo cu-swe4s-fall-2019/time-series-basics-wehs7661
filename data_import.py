@@ -5,6 +5,7 @@ from os.path import isfile, join
 import argparse
 import datetime
 import math
+import copy
 
 
 class ImportData:
@@ -18,7 +19,7 @@ class ImportData:
         data_csv : str
             the filename of the .csv file
         replace : bool
-            whether to trigger the loop for examining if there are strings like 'high' or 'low' in the value column
+            whether to trigger the loop for examining if there are strings like 'high' or 'low' in the value column. Should be set as True if 'cgm_small.csv' is in the filename
 
         Returns
         -------
@@ -26,6 +27,11 @@ class ImportData:
         """
         self._time = []
         self._value = []
+        self._type = 0       # type = 0: sum the values in roundTimeArray
+        self._err = False    # No ValueError is raised 
+
+        if 'smbg' in data_csv or 'hr' in data_csv or 'cgm' in data_csv or 'basal' in data_csv:
+            self._type = 1   # type = 1: average the values in roundTimeArray
 
         if 'cgm_small.csv' in data_csv:
             replace = True
@@ -40,23 +46,31 @@ class ImportData:
                         print("Replacing the string 'low' with 40 ...")
                         row['value'] = 40
                     if row['value'] == 'high':
-                        print("Replacing the string 'high' with 300...")
+                        print("Replacing the string 'high' with 300 ...")
                         row['value'] = 300
-                try: 
-                    self._time.append(dateutil.parser.parse(row['time']))
-                except ValueError:
-                    print('Bad input format for time')
 
-                if (not math.isnan(float(row['value'])) and not math.isinf(float(row['value']))):
-                    self._value.append(int(row['value']))
+                try: 
+                    dateutil.parser.parse(row['time'])
+                except ValueError:
+                    self._err = True
+                    print('Wrong data type / bad input format of time')
+
+                try: 
+                    if (not math.isnan(float(row['value'])) and not math.isinf(float(row['value'])) and self._err == False):
+                        self._time.append(datetime.datetime.strptime(row['time'], '%m/%d/%y %H:%M'))
+                        self._value.append(int(row['value']))
+
+                except ValueError:
+                    print('Wrong data type / bad input format of value')
             f.close()
 
     def linear_search_value(self, key_time):
-        """ This function returns a list of value(s) associated with key_time. If the list is empty, return -1 and error message.
+        """ 
+        This function returns a list of value(s) associated with key_time. If the list is empty, return -1 and error message.
 
         Parameters
         ----------
-        key_time : datetime
+        key_time : datetime object
             the time for finding the associated value
 
         Returns
@@ -68,11 +82,10 @@ class ImportData:
             if self._time[i] == key_time:
                 vals.append(self._value[i])
 
-            if (len(vals) == 0):
-                print('No value associated with key_time found.')
-                return -1
+        if (len(vals) == 0):
+            print('No value associated with key_time found.')
+            return -1
         return vals
-
 
     def binary_search_value(self,key_time):
         pass
@@ -81,17 +94,49 @@ class ImportData:
         # if none, return -1 and error message
 
 def roundTimeArray(obj, res):
-    pass
-    # Inputs: obj (ImportData Object) and res (rounding resoultion)
-    # objective:
-    # create a list of datetime entries and associated values
-    # with the times rounded to the nearest rounding resolution (res)
-    # ensure no duplicated times
-    # handle duplicated values for a single timestamp based on instructions in
-    # the assignment
-    # return: iterable zip object of the two lists
-    # note: you can create additional variables to help with this task
-    # which are not returned
+    """
+    This function creates a list of datetime entries and associated values with the times rounded to the 
+    nearest rounding resolution (res).
+
+    Parameters
+    ----------
+    obj : data_import.ImportData
+        an ImportData object
+    res : int
+        the time resolution for rounding (units: minute)
+
+    Returns
+    -------
+    result : zip object
+        an iterable zip object of the lists of datetime entries and associated values
+    """
+
+    roundtime = copy.deepcopy(obj)
+    rtime_list = []
+    value_list = []
+    for i in range(len(roundtime._time)):
+        t = roundtime._time[i]
+        discard = datetime.timedelta(minutes=t.minute % res)
+        t -= discard
+        if discard >= datetime.timedelta(minutes= res / 2):
+            t += datetime.timedelta(minutes=res)
+        roundtime._time[i] = t
+
+    for i in range(len(roundtime._time)):
+        if i == 0:
+            rtime_list.append(roundtime._time[0])
+        else:
+            if roundtime._time[i] != roundtime._time[i - 1]:
+                rtime_list.append(roundtime._time[i])
+        search_vals = roundtime.linear_search_value(roundtime._time[i])
+        if obj._type == 0:
+            value_list.append(sum(search_vals))
+        elif obj._type == 1:
+            value_list.append(sum(search_vals)/len(search_vals))
+
+    return zip(rtime_list, value_list)
+
+    
 
 
 def printArray(data_list, annotation_list, base_name, key_file):
