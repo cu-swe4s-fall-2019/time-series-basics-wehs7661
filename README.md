@@ -44,7 +44,7 @@ python test_data_import.py
   * `binary_search_value`:
     * Returns a list of value(s) associated with key_time using a binary approach.
 
-### `roundTimeArray(obj, res)`
+### `roundTimeArray(obj, res)` 
 * Parameterss: `obj` (`ImportData` Object) and `res` (rounding resoultion of time)
 * Action:
   * Creates a list of datetime entries and associated values with the times rounded to the nearest rounding resolution (res).
