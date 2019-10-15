@@ -110,7 +110,7 @@ class ImportData:
     def binary_search_value(self, key_time):
         """
         This function returns a list of value(s) associated with key_time
-        using a linear approach. If the list is empty, return -1 and error
+        using a binary approach. If the list is empty, return -1 and error
         message.
 
         Parameters
@@ -233,7 +233,7 @@ def printArray(data_list, annotation_list, base_name, key_file):
 
     Returns
     -------
-    None (but a .csv file will be produced)
+    None (but two .csv files will be produced)
     """
 
     if not (key_file in annotation_list):
