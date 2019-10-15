@@ -30,15 +30,7 @@ run test_path python data_import.py -f . -o test -s kk.csv
 assert_in_stdout "The files in the folder should all be .csv files."
 assert_exit_code 1
 
-# Check if .csv files were generated 
+# Check if the code works properly in general
 run test_basics python data_import.py -f smallData -o test -s cgm_small.csv -l
 assert_stdout 
 assert_exit_code 0
-
-run test_csv_15 head test_15.csv
-assert_in_stdout "time,cgm_small.csv,smbg_small.csv,meal_small.csv,basal_small.csv,hr_small.csv,activity_small.csv,bolus_small.csv"
-rm test_15.csv
-
-run test_csv_5 head test_5.csv
-assert_in_stdout "time,cgm_small.csv,smbg_small.csv,meal_small.csv,basal_small.csv,hr_small.csv,activity_small.csv,bolus_small.csv"
-rm test_5.csv

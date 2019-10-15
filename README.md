@@ -35,7 +35,7 @@ python test_data_import.py
 - Developed functional tests for `data_import.py`, including tests to:
   - Check if the right searching method was used
   - Check if the exception handling works properly
-  - Check if .csv file were generated
+  - Check if the code works properly in general
 
 ### Extra credit: benchmarking of the generation of `result_5.csv` and `result_15.csv`
 In the method `roundTimeArray`, two different searching methods are available, including `linear_search_value` and `binary_search_value`. The result of benchmarking is shown below:
