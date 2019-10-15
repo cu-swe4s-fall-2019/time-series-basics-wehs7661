@@ -39,6 +39,17 @@ class TestDataImport(unittest.TestCase):
         self.assertEqual(val1, [60])
         self.assertEqual(val2, -1)
 
+    def test_binary_search(self):
+        """
+        A testing function for binary_search_value.
+        """
+        time1 = datetime.datetime(2018, 3, 16, 8, 42)
+        time2 = datetime.datetime(2020, 3, 12, 0, 0)
+        val1 = self.obj.binary_search_value(time1)
+        val2 = self.obj.binary_search_value(time2)
+        self.assertEqual(val1, [60])
+        self.assertEqual(val2, -1)
+
     def test_roundtime(self):
         """
         A testing function for rounTimeArray
@@ -71,8 +82,6 @@ class TestDataImport(unittest.TestCase):
         self.assertNotEqual(result, -1)
         self.assertTrue(os.path.exists('test_printarray.csv'))
         os.remove('test_printarray.csv')
-
-
 
 
 if __name__ == '__main__':
