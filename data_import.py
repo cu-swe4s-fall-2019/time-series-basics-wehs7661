@@ -7,6 +7,7 @@ import datetime
 import math
 import copy
 import sys
+import time
 
 
 class ImportData:
@@ -109,7 +110,7 @@ class ImportData:
         low, high = -1, len(self._time)  # indices
         while high > 0:
             mid = (high + low) // 2
-            if key_time == self._time[mid] or low == 37:
+            if key_time == self._time[mid] or low == len(self._time) - 1:
                 break
             elif key_time < self._time[mid]:
                 high = mid
@@ -128,9 +129,17 @@ class ImportData:
 
         # Then, start appending the values from the leftmost point
         left += 1    # the index of the leftmost point
-        while self._time[left] == key_time:
-            vals.append(self._value[left])
-            left += 1
+
+        while left >= 0:
+            if left <= len(self._time) - 1:
+                if self._time[left] == key_time:
+                    vals.append(self._value[left])
+                    left += 1
+                else:
+                    break
+            else:
+                break
+
 
         if len(vals) == 0:
             print('No value associated with key_time found.')
@@ -165,7 +174,6 @@ def roundTimeArray(obj, res):
         if discard >= datetime.timedelta(minutes= res / 2):
             t += datetime.timedelta(minutes=res)
         roundtime._time[i] = t
-
     for i in range(len(roundtime._time)):
         if i == 0:
             rtime_list.append(roundtime._time[0])
@@ -174,7 +182,7 @@ def roundTimeArray(obj, res):
                 continue
             else:
                 rtime_list.append(roundtime._time[i])
-        search_vals = roundtime.linear_search_value(roundtime._time[i])
+        search_vals = roundtime.binary_search_value(roundtime._time[i])
         if obj._type == 0:
             value_list.append(sum(search_vals))
         elif obj._type == 1:
@@ -269,16 +277,22 @@ if __name__ == '__main__':
         print('No data imported')
         sys.exit(1)
 
-    data_5, data_15 = [], []
+    start = time.time()
+    data_5 = []
     for obj in data_list:
         data_5.append(roundTimeArray(obj, 5))
-        data_15.append(roundTimeArray(obj, 15))
-    
-    # print to a csv file
     result = printArray(data_5, listdir(args.folder_name), args.output_file+'_5', args.sort_key)
     if (result == -1):
         sys.exit(1)
+    end = time.time()
+    print('Time required to generate data_5.csv: %s seconds' %str(end-start))
 
+    start = time.time()
+    data_15 = []
+    for obj in data_list:
+        data_15.append(roundTimeArray(obj, 15))
     result = printArray(data_15, listdir(args.folder_name), args.output_file+'_15', args.sort_key)
     if (result == -1):
         sys.exit(1)
+    end = time.time()
+    print('Time required to generate data_15.csv: %s seconds' %str(end-start))
