@@ -146,7 +146,7 @@ class ImportData:
             return -1
         return vals
 
-def roundTimeArray(obj, res):
+def roundTimeArray(obj, res, linear=False):
     """
     This function creates a list of datetime entries and associated values with the times rounded to the 
     nearest rounding resolution (res).
@@ -157,6 +157,7 @@ def roundTimeArray(obj, res):
         an ImportData object
     res : int
         the time resolution for rounding (units: minute)
+    linear : bool
 
     Returns
     -------
@@ -182,7 +183,10 @@ def roundTimeArray(obj, res):
                 continue
             else:
                 rtime_list.append(roundtime._time[i])
-        search_vals = roundtime.binary_search_value(roundtime._time[i])
+        if linear == True:
+            search_vals = roundtime.linear_search_value(roundtime._time[i])
+        else:
+            search_vals = roundtime.binary_search_value(roundtime._time[i])
         if obj._type == 0:
             value_list.append(sum(search_vals))
         elif obj._type == 1:
@@ -261,6 +265,11 @@ if __name__ == '__main__':
                         type = int,
                         help = "Number of Files", 
                         required = False)
+    parser.add_argument('-l',
+                        '--linear',
+                        default = False,
+                        action = 'store_true',    # store boolean True instead of 'False'
+                        help = "Whether to use linear searching method. Using '-l' means that the linear searching method is used.")
 
     args = parser.parse_args()
 
@@ -277,10 +286,16 @@ if __name__ == '__main__':
         print('No data imported')
         sys.exit(1)
 
+    print('=====================================================')
+    if args.linear:
+        print('Searching method: linear')
+    else:
+        print('Searching method: binary')
+
     start = time.time()
     data_5 = []
     for obj in data_list:
-        data_5.append(roundTimeArray(obj, 5))
+        data_5.append(roundTimeArray(obj, 5, linear = args.linear))
     result = printArray(data_5, listdir(args.folder_name), args.output_file+'_5', args.sort_key)
     if (result == -1):
         sys.exit(1)
@@ -290,7 +305,7 @@ if __name__ == '__main__':
     start = time.time()
     data_15 = []
     for obj in data_list:
-        data_15.append(roundTimeArray(obj, 15))
+        data_15.append(roundTimeArray(obj, 15, linear = args.linear))
     result = printArray(data_15, listdir(args.folder_name), args.output_file+'_15', args.sort_key)
     if (result == -1):
         sys.exit(1)

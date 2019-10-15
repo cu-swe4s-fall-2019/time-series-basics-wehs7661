@@ -55,14 +55,26 @@ class TestDataImport(unittest.TestCase):
         A testing function for rounTimeArray
         """
         obj_test1 = data_import.ImportData('./smallData/cgm_small.csv')
-        output = data_import.roundTimeArray(obj_test1, 30)
+        output = data_import.roundTimeArray(obj_test1, 30, linear = True)
+        for (time, val) in output:
+            self.assertEqual(time.minute, 0)
+            self.assertEqual(val, (131 + 138 + 144)/3)
+            break
+
+        output = data_import.roundTimeArray(obj_test1, 30, linear = False)
         for (time, val) in output:
             self.assertEqual(time.minute, 0)
             self.assertEqual(val, (131 + 138 + 144)/3)
             break
 
         obj_test2 = data_import.ImportData('./smallData/activity_small.csv')
-        output = data_import.roundTimeArray(obj_test2, 40)
+        output = data_import.roundTimeArray(obj_test2, 40, linear = True)
+        for (time, val) in output:
+            self.assertEqual(time.minute, 0)
+            self.assertEqual(val, (3 + 7 + 76 + 6 + 7))
+            break
+
+        output = data_import.roundTimeArray(obj_test2, 40, linear=False)
         for (time, val) in output:
             self.assertEqual(time.minute, 0)
             self.assertEqual(val, (3 + 7 + 76 + 6 + 7))
