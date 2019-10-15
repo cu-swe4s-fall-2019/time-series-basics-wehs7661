@@ -13,26 +13,29 @@ import time
 class ImportData:
     def __init__(self, data_csv, replace=False):
         """
-        The initialization function import time and value entries from the .csv file.
+        The initialization function import time and value entries from the
+        .csv file.
 
         Parameters
         ----------
-        
+
         data_csv : str
             the filename of the .csv file
         replace : bool
-            whether to trigger the loop for examining if there are strings like 'high' or 'low' in the value column. Should be set as True if 'cgm_small.csv' is in the filename
+            whether to trigger the loop for examining if there are strings
+             like 'high' or 'low' in the value column. Should be set as True
+             if 'cgm_small.csv' is in the filename
 
         Returns
         -------
-        None 
+        None
         """
         self._time = []
         self._value = []
         self._type = 0       # type = 0: sum the values in roundTimeArray
-        self._err = False    # No ValueError is raised 
 
-        if 'smbg' in data_csv or 'hr' in data_csv or 'cgm' in data_csv or 'basal' in data_csv:
+        if 'smbg' in data_csv or 'hr' in data_csv or 'cgm' in data_csv or \
+           'basal' in data_csv:
             self._type = 1   # type = 1: average the values in roundTimeArray
 
         if 'cgm_small.csv' in data_csv:
@@ -44,32 +47,45 @@ class ImportData:
             for row in reader:
                 row_num += 1
                 if row['time'] == '' or row['value'] == '':
-                    print("Row %s: skipping the rows with imcomplete data..." % str(row_num))
+                    print("Row %s: skipping the rows with imcomplete data..."
+                          % str(row_num))
                 if replace is True:
                     if row['value'] == 'low':
-                        print("Row %s:, replacing the string 'low' with 40 ..." % str(row_num))
+                        print(
+                            "Row %s:, replacing the string 'low' with 40 ..."
+                            % str(row_num))
                         row['value'] = 40
                     if row['value'] == 'high':
-                        print("Row %s: replacing the string 'high' with 300 ..." %str(row_num))
+                        print(
+                            "Row %s: replacing the string 'high' with 300 ..."
+                            % str(row_num))
                         row['value'] = 300
 
-                try: 
+                try:
                     dateutil.parser.parse(row['time'])
                 except ValueError:
-                    print('Row %s: wrong data type / bad input format of time' %str(row_num))
+                    print(
+                        'Row %s: wrong data type / bad input format of time'
+                        % str(row_num))
 
-                try: 
-                    if (not math.isnan(float(row['value'])) and not math.isinf(float(row['value'])) and self._err == False):
-                        self._time.append(datetime.datetime.strptime(row['time'], '%m/%d/%y %H:%M'))
+                try:
+                    if (not math.isnan(float(row['value'])) and not
+                            math.isinf(float(row['value']))):
+                        self._time.append(datetime.datetime.strptime(
+                            row['time'], '%m/%d/%y %H:%M'))
                         self._value.append(float(row['value']))
 
                 except ValueError:
-                    print('Row %s: wrong data type / bad input format of value' %str(row_num))
+                    print(
+                        'Row %s: wrong data type / bad input format of value'
+                        % str(row_num))
             f.close()
 
     def linear_search_value(self, key_time):
-        """ 
-        This function returns a list of value(s) associated with key_time using a linear approach. If the list is empty, return -1 and error message.
+        """
+        This function returns a list of value(s) associated with key_time
+        using a linear approach. If the list is empty, return -1 and error
+        message.
 
         Parameters
         ----------
@@ -92,8 +108,10 @@ class ImportData:
         return vals
 
     def binary_search_value(self, key_time):
-        """ 
-        This function returns a list of value(s) associated with key_time using a linear approach. If the list is empty, return -1 and error message.
+        """
+        This function returns a list of value(s) associated with key_time
+        using a linear approach. If the list is empty, return -1 and error
+        message.
 
         Parameters
         ----------
@@ -117,9 +135,9 @@ class ImportData:
             else:
                 low = mid
 
-        # Note that there might be several values associated to the same key_time
+        # Note that several values might associate to the same key_time
         left = mid - 1
-        
+
         # first, find the leftmost value associated to key_time
         while left >= 0:
             if self._time[left] == key_time:
@@ -140,16 +158,16 @@ class ImportData:
             else:
                 break
 
-
         if len(vals) == 0:
             print('No value associated with key_time found.')
             return -1
         return vals
 
+
 def roundTimeArray(obj, res, linear=False):
     """
-    This function creates a list of datetime entries and associated values with the times rounded to the 
-    nearest rounding resolution (res).
+    This function creates a list of datetime entries and associated values
+    with the times rounded to the nearest rounding resolution (res).
 
     Parameters
     ----------
@@ -158,11 +176,13 @@ def roundTimeArray(obj, res, linear=False):
     res : int
         the time resolution for rounding (units: minute)
     linear : bool
+        whether to use the linear searching method
 
     Returns
     -------
     result : zip object
-        an iterable zip object of the lists of datetime entries and associated values
+        an iterable zip object of the lists of datetime entries and
+         associated values
     """
 
     roundtime = copy.deepcopy(obj)
@@ -172,7 +192,7 @@ def roundTimeArray(obj, res, linear=False):
         t = roundtime._time[i]
         discard = datetime.timedelta(minutes=t.minute % res)
         t -= discard
-        if discard >= datetime.timedelta(minutes= res / 2):
+        if discard >= datetime.timedelta(minutes=res / 2):
             t += datetime.timedelta(minutes=res)
         roundtime._time[i] = t
     for i in range(len(roundtime._time)):
@@ -183,7 +203,7 @@ def roundTimeArray(obj, res, linear=False):
                 continue
             else:
                 rtime_list.append(roundtime._time[i])
-        if linear == True:
+        if linear is True:
             search_vals = roundtime.linear_search_value(roundtime._time[i])
         else:
             search_vals = roundtime.binary_search_value(roundtime._time[i])
@@ -194,9 +214,11 @@ def roundTimeArray(obj, res, linear=False):
 
     return zip(rtime_list, value_list)
 
+
 def printArray(data_list, annotation_list, base_name, key_file):
     """
-    This function creates a csv file which aligns the data in the given list of zip objects based on key_file. 
+    This function creates a csv file which aligns the data in the
+     given list of zip objects based on key_file.
 
     Parameters
     ----------
@@ -208,12 +230,12 @@ def printArray(data_list, annotation_list, base_name, key_file):
         the file name of the file to be printed
     key_file : str
         the name from annotation_list which the user wants to align the data on
-    
+
     Returns
     -------
     None (but a .csv file will be produced)
     """
-    
+
     if not (key_file in annotation_list):
         print('The reference file is not found in annotation_list!')
         return -1
@@ -242,43 +264,55 @@ def printArray(data_list, annotation_list, base_name, key_file):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
-        description= 'A class to import, combine, and print data from a folder.',
-    prog= 'dataImport')
+        description='A class to import, combine, and print data \
+            from a folder.',
+        prog='dataImport')
 
-    parser.add_argument('-f', 
-                        '--folder_name', 
-                        type = str, 
-                        help = 'Name of the folder')
+    parser.add_argument('-f',
+                        '--folder_name',
+                        type=str,
+                        help='Name of the folder')
 
-    parser.add_argument('-o', 
-                        '--output_file', 
-                        type=str, 
-                        help = 'Name of Output file')
+    parser.add_argument('-o',
+                        '--output_file',
+                        type=str,
+                        help='Name of Output file')
 
     parser.add_argument('-s',
-                        '--sort_key', 
-                        type = str, 
-                        help = 'File to sort on')
+                        '--sort_key',
+                        type=str,
+                        help='File to sort on')
 
     parser.add_argument('-n',
-                        '--number_of_files', 
-                        type = int,
-                        help = "Number of Files", 
-                        required = False)
+                        '--number_of_files',
+                        type=int,
+                        help="Number of Files",
+                        required=False)
     parser.add_argument('-l',
                         '--linear',
-                        default = False,
-                        action = 'store_true',    # store boolean True instead of 'False'
-                        help = "Whether to use linear searching method. Using '-l' means that the linear searching method is used.")
+                        default=False,
+                        action='store_true',
+                        help="Whether to use linear searching method. \
+                            Using '-l' means that the linear searching method \
+                            is used.")
 
     args = parser.parse_args()
 
     try:
-        file_list = listdir(args.folder_name)   
+        file_list = listdir(args.folder_name)
     except FileNotFoundError:
         print('Folder not found.')
         sys.exit(1)
-    
+
+    counter = 0
+    for i in range(len(file_list)):
+        if file_list[i].endswith('.csv'):
+            counter += 1
+    if counter != len(file_list):
+        print('The files in the folder should all be .csv files. Check if \
+            the path of the folder is correct!')
+        sys.exit(1)
+
     data_list = []
     for i in range(len(file_list)):
         data_list.append(ImportData(args.folder_name + '/' + file_list[i]))
@@ -295,19 +329,21 @@ if __name__ == '__main__':
     start = time.time()
     data_5 = []
     for obj in data_list:
-        data_5.append(roundTimeArray(obj, 5, linear = args.linear))
-    result = printArray(data_5, listdir(args.folder_name), args.output_file+'_5', args.sort_key)
+        data_5.append(roundTimeArray(obj, 5, linear=args.linear))
+    result = printArray(data_5, listdir(args.folder_name),
+                        args.output_file+'_5', args.sort_key)
     if (result == -1):
         sys.exit(1)
     end = time.time()
-    print('Time required to generate data_5.csv: %s seconds' %str(end-start))
+    print('Time required to generate data_5.csv: %s seconds' % str(end-start))
 
     start = time.time()
     data_15 = []
     for obj in data_list:
-        data_15.append(roundTimeArray(obj, 15, linear = args.linear))
-    result = printArray(data_15, listdir(args.folder_name), args.output_file+'_15', args.sort_key)
+        data_15.append(roundTimeArray(obj, 15, linear=args.linear))
+    result = printArray(data_15, listdir(args.folder_name),
+                        args.output_file+'_15', args.sort_key)
     if (result == -1):
         sys.exit(1)
     end = time.time()
-    print('Time required to generate data_15.csv: %s seconds' %str(end-start))
+    print('Time required to generate data_15.csv: %s seconds' % str(end-start))
