@@ -68,7 +68,7 @@ class ImportData:
 
     def linear_search_value(self, key_time):
         """ 
-        This function returns a list of value(s) associated with key_time. If the list is empty, return -1 and error message.
+        This function returns a list of value(s) associated with key_time using a linear approach. If the list is empty, return -1 and error message.
 
         Parameters
         ----------
@@ -90,11 +90,52 @@ class ImportData:
             return -1
         return vals
 
-    def binary_search_value(self,key_time):
-        pass
-        # optional extra credit
-        # return list of value(s) associated with key_time
-        # if none, return -1 and error message
+    def binary_search_value(self, key_time):
+        """ 
+        This function returns a list of value(s) associated with key_time using a linear approach. If the list is empty, return -1 and error message.
+
+        Parameters
+        ----------
+        key_time : datetime object
+            the time for finding the associated value
+
+        Returns
+        -------
+        vals : int or list
+            a list of value(s) associated with given key_time
+        """
+        vals = []
+        self._time.sort()
+        low, high = -1, len(self._time)  # indices
+        while high > 0:
+            mid = (high + low) // 2
+            if key_time == self._time[mid] or low == 37:
+                break
+            elif key_time < self._time[mid]:
+                high = mid
+            else:
+                low = mid
+
+        # Note that there might be several values associated to the same key_time
+        left = mid - 1
+        
+        # first, find the leftmost value associated to key_time
+        while left >= 0:
+            if self._time[left] == key_time:
+                left -= 1
+            else:
+                break
+
+        # Then, start appending the values from the leftmost point
+        left += 1    # the index of the leftmost point
+        while self._time[left] == key_time:
+            vals.append(self._value[left])
+            left += 1
+
+        if len(vals) == 0:
+            print('No value associated with key_time found.')
+            return -1
+        return vals
 
 def roundTimeArray(obj, res):
     """
