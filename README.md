@@ -30,7 +30,7 @@ To run unit tests for `data_import.py`, run:
 ```
 python test_data_import.py
 ```
-### ImportData Class
+### `ImportData` Class
 * Parameters: the filename of a `.csv file` which contains columns of data named `time` and `value`
 * Attributes:
   * `_time`: a list containing datetimes
@@ -44,7 +44,7 @@ python test_data_import.py
   * `binary_search_value`:
     * Returns a list of value(s) associated with key_time using a binary approach.
 
-### roundTimeArray(obj, res)
+### `roundTimeArray(obj, res)`
 * Parameterss: `obj` (`ImportData` Object) and `res` (rounding resoultion of time)
 * Action:
   * Creates a list of datetime entries and associated values with the times rounded to the nearest rounding resolution (res).
@@ -59,7 +59,7 @@ python test_data_import.py
     * Basal - average the values
 * Returns: iterable zip object of the two lists
 
-### printArray(data_list, annotation_list, base_name, key_file)
+### `printArray(data_list, annotation_list, base_name, key_file)`
 * Parameterss​: 
   * `​data_list` ​a list of zip objects of data (time, value) pairs.
   * `annotation_list` ​a list of strings with column labels for the data value
